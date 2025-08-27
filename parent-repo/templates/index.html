@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MACRA Market Analyzer</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            min-height: 100vh; 
+            color: #333;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        
+        .header { 
+            text-align: center; 
+            color: white; 
+            margin-bottom: 40px; 
+            animation: fadeInDown 1s ease-out;
+        }
+        .header h1 { 
+            font-size: 2.8rem; 
+            margin-bottom: 10px; 
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .header p { 
+            font-size: 1.2rem; 
+            opacity: 0.9; 
+            margin-bottom: 10px;
+        }
+        .header .subtitle {
+            font-size: 1rem;
+            opacity: 0.8;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        
+        .search-section { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+            margin-bottom: 30px;
+            animation: fadeInUp 1s ease-out;
+        }
+        
+        .input-group { 
+            display: flex; 
+            gap: 15px; 
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        input { 
+            flex: 1; 
+            padding: 18px; 
+            border: 2px solid #e9ecef; 
+            border-radius: 12px; 
+            font-size: 16px;
+            transition: all 0.3s ease;
+            min-width: 250px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .btn { 
+            padding: 18px 30px; 
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white; 
+            border: none; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        .btn:hover { 
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .quick-stocks {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        
+        .quick-stock {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .quick-stock:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        
+        .loading { 
+            text-align: center; 
+            color: white; 
+            font-size: 20px; 
+            padding: 30px;
+            animation: pulse 2s infinite;
+        }
+        
+        .results { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); 
+            gap: 25px;
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        .card { 
+            background: white; 
+            padding: 25px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-left: 5px solid #667eea;
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .card h3 { 
+            color: #667eea; 
+            margin-bottom: 20px; 
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .metric { 
+            display: flex; 
+            justify-content: space-between; 
+            margin: 12px 0; 
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+            align-items: center;
+        }
+        .metric:last-child { border-bottom: none; }
+        .metric strong { 
+            color: #495057; 
+            font-weight: 600;
+        }
+        .metric span { 
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .sentiment { 
+            font-size: 1.3rem; 
+            text-align: center; 
+            margin: 20px 0; 
+            padding: 18px;
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            font-weight: 700;
+            border: 2px solid #e9ecef;
+        }
+        
+        .score-bar {
+            background: #e9ecef;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .score-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57, #48cae4, #06ffa5);
+            transition: width 1.5s ease-out;
+            border-radius: 5px;
+        }
+        
+        .factors-list {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+        .factors-list ul {
+            list-style: none;
+            padding: 0;
+        }
+        .factors-list li {
+            padding: 5px 0;
+            position: relative;
+            padding-left: 20px;
+        }
+        .factors-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .news-item {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+        .news-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        .news-title { 
+            font-weight: 600; 
+            margin-bottom: 8px;
+            color: #495057;
+            font-size: 15px;
+        }
+        .news-desc { 
+            color: #6c757d; 
+            font-size: 14px; 
+            line-height: 1.5;
+        }
+        
+        /* AI Chatbox Styles */
+        .chat-toggle {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 50%;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .chat-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
+        }
+        
+        .chat-widget {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+            display: none;
+            flex-direction: column;
+            z-index: 999;
+            animation: slideInUp 0.3s ease-out;
+        }
+        
+        .chat-header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 20px 20px 0 0;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+        
+        .user-message {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .ai-message {
+            background: white;
+            color: #333;
+            border: 1px solid #e9ecef;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-radius: 0 0 20px 20px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .chat-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        
+        .chat-input:focus {
+            border-color: #667eea;
+        }
+        
+        .chat-send-btn {
+            width: 45px;
+            height: 45px;
+            background: #667eea;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .chat-send-btn:hover {
+            background: #5a6fd8;
+            transform: scale(1.05);
+        }
+        
+        .typing-indicator {
+            display: none;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            margin-bottom: 15px;
+            max-width: 80%;
+            border: 1px solid #e9ecef;
+        }
+        
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dots span:nth-child(1) { animation-delay: 0s; }
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+            30% { transform: translateY(-10px); opacity: 1; }
+        }
+        
+        @keyframes fadeInDown { 
+            from { opacity: 0; transform: translateY(-30px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        @keyframes fadeInUp { 
+            from { opacity: 0; transform: translateY(30px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        @keyframes fadeIn { 
+            from { opacity: 0; } 
+            to { opacity: 1; } 
+        }
+        @keyframes pulse { 
+            0%, 100% { opacity: 1; } 
+            50% { opacity: 0.6; } 
+        }
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 768px) {
+            .container { padding: 15px; }
+            .header h1 { font-size: 2.2rem; }
+            .input-group { flex-direction: column; }
+            .results { grid-template-columns: 1fr; }
+            input { min-width: auto; }
+            
+            .chat-widget {
+                width: 90%;
+                right: 5%;
+                height: 70vh;
+            }
+            
+            .chat-toggle {
+                bottom: 20px;
+                right: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-chart-line"></i> MACRA Market Analyzer</h1>
+            <p>AI-Powered Stock Analysis • Real-time Data • Beginner-Friendly</p>
+            <div class="subtitle">
+                <i class="fas fa-rocket"></i> Making Stock Investing Accessible for Everyone
+            </div>
+        </div>
+        
+        <div class="search-section">
+            <div class="input-group">
+                <input type="text" id="stockSymbol" placeholder="Enter stock symbol (e.g., AAPL, TSLA, MSFT, GOOGL)" />
+                <button class="btn" onclick="analyzeStock()">
+                    <i class="fas fa-search"></i> Analyze Stock
+                </button>
+            </div>
+            
+            <div style="text-align: center; color: #666; margin-bottom: 15px; font-weight: 500;">
+                <i class="fas fa-star"></i> Popular Stocks - Click to Analyze:
+            </div>
+            <div class="quick-stocks">
+                <div class="quick-stock" onclick="quickAnalyze('AAPL')"><i class="fab fa-apple"></i> AAPL</div>
+                <div class="quick-stock" onclick="quickAnalyze('MSFT')"><i class="fab fa-microsoft"></i> MSFT</div>
+                <div class="quick-stock" onclick="quickAnalyze('GOOGL')"><i class="fab fa-google"></i> GOOGL</div>
+                <div class="quick-stock" onclick="quickAnalyze('AMZN')"><i class="fab fa-amazon"></i> AMZN</div>
+                <div class="quick-stock" onclick="quickAnalyze('TSLA')">⚡ TSLA</div>
+                <div class="quick-stock" onclick="quickAnalyze('META')"><i class="fab fa-meta"></i> META</div>
+                <div class="quick-stock" onclick="quickAnalyze('NVDA')">🔥 NVDA</div>
+            </div>
+        </div>
+        
+        <div id="loading" class="loading" style="display: none;">
+            <i class="fas fa-spinner fa-spin"></i> Analyzing market data and generating AI insights...
+        </div>
+        
+        <div id="results" class="results"></div>
+    </div>
+
+    <!-- AI Chat Widget -->
+    <button class="chat-toggle" onclick="toggleChat()">
+        <i class="fas fa-robot"></i>
+    </button>
+    
+    <div class="chat-widget" id="chatWidget">
+        <div class="chat-header">
+            <i class="fas fa-robot"></i> MACRA AI Assistant
+            <div style="font-size: 12px; opacity: 0.9; margin-top: 5px;">
+                Ask me about stocks, investing, and market analysis!
+            </div>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message ai-message">
+                👋 Hi! I'm your MACRA AI assistant. I can help you understand stocks, investing basics, market trends, and answer questions about the analysis results. What would you like to know?
+            </div>
+        </div>
+        
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="chat-input-container">
+            <div class="chat-input-group">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Ask me about stocks and investing..." />
+                <button class="chat-send-btn" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStockContext = null;
+        
+        function toggleChat() {
+            const widget = document.getElementById('chatWidget');
+            const toggle = document.querySelector('.chat-toggle');
+            
+            if (widget.style.display === 'none' || widget.style.display === '') {
+                widget.style.display = 'flex';
+                toggle.innerHTML = '<i class="fas fa-times"></i>';
+            } else {
+                widget.style.display = 'none';
+                toggle.innerHTML = '<i class="fas fa-robot"></i>';
+            }
+        }
+        
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message to chat
+            addMessageToChat(message, 'user');
+            input.value = '';
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        stock_context: currentStockContext
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Hide typing indicator and add AI response
+                hideTypingIndicator();
+                addMessageToChat(data.response, 'ai');
+                
+            } catch (error) {
+                hideTypingIndicator();
+                addMessageToChat('Sorry, I encountered an error. Please try again! 🤖', 'ai');
+                console.error('Chat error:', error);
+            }
+        }
+        
+        function addMessageToChat(message, sender) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.textContent = message;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function showTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'block';
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function hideTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'none';
+        }
+        
+        // Handle Enter key in chat input
+        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        function quickAnalyze(symbol) {
+            document.getElementById('stockSymbol').value = symbol;
+            analyzeStock();
+        }
+
+        async function analyzeStock() {
+            const symbol = document.getElementById('stockSymbol').value.toUpperCase().trim();
+            if (!symbol) {
+                alert('Please enter a stock symbol (e.g., AAPL, MSFT, GOOGL)');
+                return;
+            }
+            
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').innerHTML = '';
+            
+            try {
+                const [stockData, analysis, news] = await Promise.all([
+                    fetch(`/api/stock/${symbol}`).then(r => r.json()),
+                    fetch(`/api/analyze/${symbol}`).then(r => r.json()),
+                    fetch(`/api/news/${symbol}`).then(r => r.json())
+                ]);
+                
+                if (stockData.error) {
+                    throw new Error(`Unable to fetch data for ${symbol}. Please check the symbol and try again.`);
+                }
+                
+                // Update stock context for AI chat
+                currentStockContext = `Currently analyzing ${symbol} (${stockData.name}): Price $${stockData.current_price?.toFixed(2)}, Change ${stockData.change?.toFixed(2)}%, AI Score ${analysis.score}/100, Sentiment: ${analysis.sentiment}`;
+                
+                displayResults(stockData, analysis, news);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('results').innerHTML = `
+                    <div class="card" style="text-align: center; color: #dc3545; border-left-color: #dc3545;">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Analysis Error</h3>
+                        <p style="margin: 15px 0;">${error.message}</p>
+                        <p style="color: #6c757d; font-size: 14px;">
+                            Try popular symbols like: AAPL, MSFT, GOOGL, AMZN, TSLA
+                        </p>
+                    </div>
+                `;
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+        
+        function displayResults(stock, analysis, news) {
+            const resultsDiv = document.getElementById('results');
+            const changeColor = (stock.change || 0) >= 0 ? '#28a745' : '#dc3545';
+            const changeIcon = (stock.change || 0) >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+            const riskColor = analysis.risk_level === 'Low' ? '#28a745' : 
+                             analysis.risk_level === 'Medium' ? '#ffc107' : '#dc3545';
+            
+            resultsDiv.innerHTML = `
+                <div class="card">
+                    <h3><i class="fas fa-chart-bar"></i> ${stock.name} (${stock.symbol})</h3>
+                    <div class="metric">
+                        <strong><i class="fas fa-dollar-sign"></i> Current Price:</strong> 
+                        <span style="font-size: 18px; color: #495057;">$${stock.current_price?.toFixed(2) || 'N/A'}</span>
+                    </div>
+                    <div class="metric">
+                        <strong><i class="fas ${changeIcon}"></i> Daily Change:</strong> 
+                        <span style="color: ${changeColor}; font-size: 18px; font-weight: bold;">
+                            ${(stock.change || 0).toFixed(2)}%
+                        </span>
+                    </div>
+                    <div class="metric">
+                        <strong><i class="fas fa-chart-area"></i> Volume:</strong> 
+                        <span>${stock.volume?.toLocaleString() || 'N/A'}</span>
+                    </div>
+                    <div class="metric">
+                        <strong><i class="fas fa-building"></i> Market Cap:</strong> 
+                        <span>${typeof stock.market_cap === 'number' ? '$' + (stock.market_cap / 1e9).toFixed(2) + 'B' : 'N/A'}</span>
+                    </div>
+                    <div class="metric">
+                        <strong><i class="fas fa-calculator"></i> P/E Ratio:</strong> 
+                        <span>${stock.pe_ratio || 'N/A'}</span>
+                    </div>
+                    <div style="margin-top: 15px; text-align: center;">
+                        <button class="btn" onclick="askAIAboutStock('${stock.symbol}')" style="font-size: 14px; padding: 10px 20px;">
+                            <i class="fas fa-robot"></i> Ask AI About ${stock.symbol}
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3><i class="fas fa-robot"></i> AI Analysis & Recommendation</h3>
+                    <div class="sentiment">${analysis.sentiment}</div>
+                    
+                    <div class="metric">
+                        <strong><i class="fas fa-brain"></i> AI Analysis:</strong> 
+                        <span style="color: #495057;">${analysis.analysis}</span>
+                    </div>
+                    
+                    <div class="metric">
+                        <strong><i class="fas fa-lightbulb"></i> Recommendation:</strong> 
+                        <span style="color: #667eea;">${analysis.recommendation}</span>
+                    </div>
+                    
+                    <div class="metric">
+                        <strong><i class="fas fa-shield-alt"></i> Risk Level:</strong> 
+                        <span style="color: ${riskColor}; font-weight: bold;">${analysis.risk_level}</span>
+                    </div>
+                    
+                    <div style="margin: 15px 0;">
+                        <strong><i class="fas fa-chart-line"></i> AI Score: ${analysis.score}/100</strong>
+                        <div class="score-bar">
+                            <div class="score-fill" style="width: ${analysis.score}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin: 15px 0;">
+                        <strong><i class="fas fa-percentage"></i> Confidence: ${analysis.confidence}%</strong>
+                        <div class="score-bar">
+                            <div class="score-fill" style="width: ${analysis.confidence}%; background: linear-gradient(90deg, #667eea, #764ba2);"></div>
+                        </div>
+                    </div>
+                    
+                    ${analysis.factors && analysis.factors.length > 0 ? `
+                    <div class="factors-list">
+                        <strong><i class="fas fa-list-check"></i> Key Analysis Factors:</strong>
+                        <ul>
+                            ${analysis.factors.map(factor => `<li>${factor}</li>`).join('')}
+                        </ul>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <div class="card">
+                    <h3><i class="fas fa-newspaper"></i> Market News & Insights</h3>
+                    ${news.slice(0, 3).map(article => `
+                        <div class="news-item">
+                            <div class="news-title"><i class="fas fa-external-link-alt"></i> ${article.title}</div>
+                            <div class="news-desc">${article.description || 'Stay informed with the latest market updates and analysis.'}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        function askAIAboutStock(symbol) {
+            // Open chat and pre-fill with stock question
+            const chatWidget = document.getElementById('chatWidget');
+            const chatInput = document.getElementById('chatInput');
+            
+            if (chatWidget.style.display === 'none' || chatWidget.style.display === '') {
+                toggleChat();
+            }
+            
+            chatInput.value = `Tell me more about ${symbol} stock. Is it a good investment?`;
+            chatInput.focus();
+        }
+        
+        // Enhanced enter key functionality
+        document.getElementById('stockSymbol').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                analyzeStock();
+            }
+        });
+        
+        // Auto-focus on input when page loads
+        window.addEventListener('load', function() {
+            document.getElementById('stockSymbol').focus();
+        });
+    </script>
+</body>
+</html>

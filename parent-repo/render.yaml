@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: macra-stock-analyzer
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: OPENAI_API_KEY
+        value: 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

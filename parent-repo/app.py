@@ -18,8 +18,10 @@ CORS(app)
 class StockAnalyzer:
     def __init__(self):
         self.news_api_key = 'demo_key'
-        self.openai_api_key = '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'
+        # Use environment variable for API key in production
+        self.openai_api_key = os.environ.get('OPENAI_API_KEY', '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')
     
+    # ... rest of your existing code stays the same ...
     def get_stock_data(self, symbol):
         try:
             stock = yf.Ticker(symbol)
@@ -140,7 +142,7 @@ class StockAnalyzer:
             headers = {
                 'Authorization': f'Bearer {self.openai_api_key}',
                 'Content-Type': 'application/json',
-                'HTTP-Referer': 'http://localhost:5000',
+                'HTTP-Referer': os.environ.get('FLASK_HOST', 'http://localhost:5000'),
                 'X-Title': 'MACRA Market Analyzer'
             }
             
@@ -395,14 +397,5 @@ def trending_stocks():
     return jsonify(trending_data)
 
 if __name__ == '__main__':
-    print("\n" + "="*60)
-    print("🚀 MACRA Market Analyzer - AI-Powered Stock Analysis")
-    print("="*60)
-    print("📍 Server URL: http://localhost:5000")
-    print("🔧 Debug Mode: ENABLED")
-    print("💡 Try these stocks: AAPL, MSFT, GOOGL, TSLA, AMZN")
-    print("📊 Features: Real-time data, AI analysis, Risk assessment")
-    print("🤖 AI Chatbox: Powered by OpenRouter AI for investment education")
-    print("="*60 + "\n")
-    
-    app.run(debug=True, host='localhost', port=5000, load_dotenv=False)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=False, host='0.0.0.0', port=port, load_dotenv=False)
